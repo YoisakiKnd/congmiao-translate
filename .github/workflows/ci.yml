@@ -1,0 +1,138 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: fmt
+        run: cargo fmt --all --check
+      - name: clippy
+        run: |
+          cargo clippy -p congmiao-core -p congmiao-daemon --all-targets -- -D warnings
+          cargo clippy -p congmiao-desktop --all-targets -- -D deprecated
+      - name: test
+        run: cargo test --workspace
+      - name: package extension
+        if: matrix.os == 'ubuntu-latest'
+        run: node extensions/build.mjs
+      - name: cache-hit budget
+        run: cargo test -p congmiao-core sqlite_cache_survives_a_new_engine -- --exact
+
+  smoke:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: dtolnay/rust-toolchain@stable
+      - name: linux packages
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf xclip xdotool tesseract-ocr tesseract-ocr-chi-sim xvfb
+      - name: frontend
+        working-directory: apps/desktop
+        run: npm install
+      - name: build debug desktop
+        run: cargo build -p congmiao-desktop
+      - name: run smoke
+        shell: bash
+        run: |
+          set -o pipefail
+          dir=$(mktemp -d)
+          export CONGMIAO_DATA_DIR="$dir"
+          export CONGMIAO_SMOKE="$dir/report.json"
+          bin="target/debug/congmiao-desktop"
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then bin="${bin}.exe"; fi
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            xvfb-run -a "$bin" || true
+          else
+            "$bin" || true
+          fi
+          mkdir -p smoke-report
+          if [ -f "$CONGMIAO_SMOKE" ]; then cp "$CONGMIAO_SMOKE" smoke-report/report.json; fi
+          python3 apps/desktop/scripts/assert-smoke.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-${{ matrix.os }}
+          path: smoke-report/report.json
+          if-no-files-found: warn
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [test, smoke]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: dtolnay/rust-toolchain@stable
+      - name: rust target
+        run: rustup target add ${{ matrix.target }}
+      - name: linux packages
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+      - name: prepare sidecars
+        run: node apps/desktop/scripts/prepare-sidecars.mjs --target ${{ matrix.target }}
+      - name: frontend
+        working-directory: apps/desktop
+        run: npm install
+      - name: apple signing env
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          if [ -n "${{ secrets.APPLE_SIGNING_IDENTITY }}" ]; then
+            echo "APPLE_SIGNING_IDENTITY=${{ secrets.APPLE_SIGNING_IDENTITY }}" >> "$GITHUB_ENV"
+            echo "APPLE_ID=${{ secrets.APPLE_ID }}" >> "$GITHUB_ENV"
+            echo "APPLE_PASSWORD=${{ secrets.APPLE_PASSWORD }}" >> "$GITHUB_ENV"
+            echo "APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}" >> "$GITHUB_ENV"
+          fi
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          projectPath: apps/desktop
+          tagName: v__VERSION__
+          releaseName: Congmiao Translate v__VERSION__
+          releaseDraft: true
+          includeUpdaterJson: true
+          args: --target ${{ matrix.target }}

@@ -1,0 +1,22 @@
+{
+  "identifier": "default",
+  "description": "主窗口可以调用翻译和设置命令",
+  "windows": ["main", "popup"],
+  "permissions": [
+    "core:default",
+    "deep-link:default",
+    "allow-translate",
+    "allow-translate-compare",
+    "allow-test-engine",
+    "allow-lookup-dict",
+    "allow-history-action",
+    "allow-vocabulary-action",
+    "allow-clear-cache",
+    "allow-speak",
+    "allow-app-action",
+    "allow-job-action",
+    "allow-get-settings",
+    "allow-save-settings",
+    "allow-daemon-status"
+  ]
+}

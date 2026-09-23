@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>从喵翻译</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body class="popup-body">
+    <header class="popup-bar" data-tauri-drag-region>
+      <input id="popup-text" type="text" placeholder="输入要翻译的文字" />
+      <button id="popup-pin" class="subtle" type="button" aria-pressed="false">固定</button>
+      <button id="popup-close" class="subtle" type="button">关闭</button>
+    </header>
+    <div id="popup-dict" class="dict" hidden></div>
+    <div id="popup-results" class="results"></div>
+    <script type="module" src="/src/popup.js"></script>
+  </body>
+</html>

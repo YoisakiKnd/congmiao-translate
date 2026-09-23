@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "从喵翻译",
+  "version": "0.1.0",
+  "description": "把网页里选中的文字交给本机从喵翻译",
+  "permissions": ["nativeMessaging", "storage", "contextMenus"],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "translate@congmiao.app",
+      "strict_min_version": "128.0"
+    }
+  },
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "action": {
+    "default_title": "从喵翻译",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

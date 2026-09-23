@@ -1,0 +1,35 @@
+[package]
+name = "congmiao-daemon"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "从喵翻译本机守护进程与浏览器 Native Messaging 宿主"
+
+[lib]
+name = "congmiao_daemon"
+path = "src/lib.rs"
+
+[[bin]]
+name = "congmiao-daemon"
+path = "src/bin/daemon.rs"
+
+[[bin]]
+name = "congmiao-host"
+path = "src/bin/host.rs"
+
+[dependencies]
+axum = "0.8"
+congmiao-core = { path = "../core" }
+congmiao-docs = { path = "../docs" }
+dirs = "5"
+futures = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "net", "rt-multi-thread", "signal", "sync", "time"] }
+tracing = "0.1"
+tracing-appender = "0.2"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

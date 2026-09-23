@@ -1,0 +1,13 @@
+[package]
+name = "congmiao-docs"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "从喵翻译的文件抽取、回填和模组汉化"
+
+[dependencies]
+pdf-extract = "0.7"
+regex = "1"
+serde_json = "1"
+zip = "2"

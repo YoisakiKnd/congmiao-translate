@@ -1,0 +1,18 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/core",
+    "crates/docs",
+    "crates/daemon",
+    "apps/desktop/src-tauri",
+]
+
+# 架构：方案 B。Rust 核心 + Tauri 2 薄界面 + MV3 扩展（Native Messaging）。
+# v1 平台：macOS 与 Windows。翻译源：OpenAI 兼容 HTTP，不加载本地模型。
+# v1 入口：软件内翻译、浏览器划词、macOS OCR 截图、macOS 系统划词。
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+publish = false

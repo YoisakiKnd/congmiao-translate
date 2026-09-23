@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>NSScreenCaptureUsageDescription</key>
+  <string>从喵翻译需要录制屏幕，以便识别你框选的内容并翻译。</string>
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLName</key>
+      <string>app.congmiao.translate</string>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>congmiao</string>
+      </array>
+    </dict>
+  </array>
+</dict>
+</plist>

@@ -1,0 +1,6 @@
+#!/bin/sh
+ROOT=$(CDPATH= cd -- "$(dirname "$0")/../../../.." && pwd)
+case "$(basename "$0")" in
+  congmiao-host*) exec "$ROOT/target/debug/congmiao-host" "$@" ;;
+  *) exec "$ROOT/target/debug/congmiao-daemon" "$@" ;;
+esac
