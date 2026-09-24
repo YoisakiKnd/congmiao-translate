@@ -160,7 +160,14 @@ pub fn recognize_bytes(bytes: &[u8]) -> Result<String, String> {
     ));
     std::fs::write(&path, bytes).map_err(|err| err.to_string())?;
     let output = Command::new("tesseract")
-        .args([path.to_str().unwrap_or(""), "stdout", "-l", "eng"])
+        .args([
+            path.to_str().unwrap_or(""),
+            "stdout",
+            "-l",
+            "eng",
+            "--psm",
+            "7",
+        ])
         .output()
         .map_err(|_| congmiao_core::linux_missing_command("tesseract"))?;
     let _ = std::fs::remove_file(&path);
