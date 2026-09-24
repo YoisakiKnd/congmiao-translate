@@ -56,7 +56,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["dmg", "nsis", "appimage", "deb"],
+    "targets": ["app", "dmg", "nsis", "appimage", "deb"],
     "createUpdaterArtifacts": true,
     "externalBin": [
       "binaries/congmiao-daemon",
