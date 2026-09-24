@@ -376,7 +376,7 @@ fn scan_patchouli_tree(
                 pending.push(path);
                 continue;
             }
-            let text = path.to_string_lossy();
+            let text = path.to_string_lossy().replace('\\', "/");
             if text.contains("patchouli_books")
                 && text.contains("/en_us/")
                 && text.ends_with(".json")
